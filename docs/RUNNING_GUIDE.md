@@ -1,36 +1,16 @@
 # Running the Application
 
-This guide covers running the Go Starter application in different environments and modes (HTTP server vs worker).
+This guide covers deployment and environment-specific configuration for the Go Starter application.
+
+See [USAGE.md](../USAGE.md) for all commands, modes, and general usage.
 
 ## Quick Start
 
-### Local Development (HTTP Server)
-
 ```bash
-# Setup
-make setup
-
-# Copy environment
-cp .env.example .env
-
-# Run
-make run
+make run  # Start HTTP server (after running make setup)
 ```
 
 Visit http://localhost:8080/swagger/index.html for API documentation.
-
-### Local Development (Worker/Cron Mode)
-
-```bash
-# Setup
-make setup
-
-# Set mode to worker
-export APP_MODE=worker
-
-# Run
-make run
-```
 
 ## Application Modes
 

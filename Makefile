@@ -39,13 +39,12 @@ setup:
 	$(GO) mod tidy
 	@echo "Setting up git hooks..."
 	@mkdir -p .git/hooks
+	@echo "Setting up environment..."
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "✓ Created .env file from .env.example"; \
+	fi
 	@echo "✓ Setup complete!"
-	@echo ""
-	@echo "Next steps:"
-	@echo "1. Update go.mod: Replace 'github.com/your-org/go-starter' with your repo path"
-	@echo "2. Run: make init-repo"
-	@echo "3. Configure .env file with your settings"
-	@echo "4. Run: make run"
 
 init-repo:
 	@echo "Initializing Git repository..."
