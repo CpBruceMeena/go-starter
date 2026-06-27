@@ -1,6 +1,6 @@
 # Go Starter - Production-Ready Template
 
-A comprehensive Go application starter template with best practices, modern patterns, and production-ready features built-in.
+A comprehensive Go application starter template with best practices, modern patterns, and production-ready features built-in. Includes database query monitoring, slow query detection, and connection pool management.
 
 ## 🎯 Features
 
@@ -266,6 +266,30 @@ w.Start(ctx)
 ```
 
 Examples included: cleanup, sync, health checks, reports, notifications.
+
+### 8. **Database Query Monitoring**
+
+Monitor slow queries and enforce connection limits:
+
+```bash
+# Configure in .env
+DB_SLOW_QUERY_THRESHOLD=1s    # Log warnings for queries slower than 1 second
+DB_QUERY_TIMEOUT=30s          # Cancel queries after 30 seconds
+DB_MAX_OPEN_CONNS=25          # Maximum open connections
+DB_MAX_IDLE_CONNS=5           # Maximum idle connections
+DB_CONN_MAX_LIFETIME=1h       # Connection max lifetime
+```
+
+Slow query log output:
+```json
+{
+  "level": "warn",
+  "msg": "slow database query detected",
+  "duration_ms": 1500,
+  "sql": "SELECT * FROM users WHERE...",
+  "rows_affected": 100
+}
+```
 ## 📊 Logger Recommendation
 
 This template uses **slog** (Go 1.21+ stdlib) as the primary logger:
