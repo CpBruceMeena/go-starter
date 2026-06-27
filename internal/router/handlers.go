@@ -4,15 +4,19 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/labstack/echo/v4"
 	"github.com/CpBruceMeena/go-starter/internal/business"
 	"github.com/CpBruceMeena/go-starter/internal/middleware"
 	"github.com/CpBruceMeena/go-starter/internal/models"
 	"github.com/CpBruceMeena/go-starter/internal/response"
+	"github.com/labstack/echo/v4"
 )
 
 // CreateUser creates a new user
 func CreateUser(c echo.Context, svc business.UserService) error {
+	if svc == nil {
+		return c.JSON(http.StatusServiceUnavailable, response.Error("SERVICE_UNAVAILABLE", "database feature not enabled"))
+	}
+
 	var req models.CreateUserRequest
 	if err := middleware.BindAndValidate(c, &req); err != nil {
 		return err
@@ -31,6 +35,10 @@ func CreateUser(c echo.Context, svc business.UserService) error {
 
 // GetUser retrieves a user by ID
 func GetUser(c echo.Context, svc business.UserService) error {
+	if svc == nil {
+		return c.JSON(http.StatusServiceUnavailable, response.Error("SERVICE_UNAVAILABLE", "database feature not enabled"))
+	}
+
 	id := c.Param("id")
 
 	user, err := svc.GetUser(c.Request().Context(), id)
@@ -43,6 +51,10 @@ func GetUser(c echo.Context, svc business.UserService) error {
 
 // UpdateUser updates an existing user
 func UpdateUser(c echo.Context, svc business.UserService) error {
+	if svc == nil {
+		return c.JSON(http.StatusServiceUnavailable, response.Error("SERVICE_UNAVAILABLE", "database feature not enabled"))
+	}
+
 	id := c.Param("id")
 
 	var req models.UpdateUserRequest
@@ -63,6 +75,10 @@ func UpdateUser(c echo.Context, svc business.UserService) error {
 
 // DeleteUser deletes a user
 func DeleteUser(c echo.Context, svc business.UserService) error {
+	if svc == nil {
+		return c.JSON(http.StatusServiceUnavailable, response.Error("SERVICE_UNAVAILABLE", "database feature not enabled"))
+	}
+
 	id := c.Param("id")
 
 	if err := svc.DeleteUser(c.Request().Context(), id); err != nil {
@@ -74,6 +90,10 @@ func DeleteUser(c echo.Context, svc business.UserService) error {
 
 // ListUsers lists all users
 func ListUsers(c echo.Context, svc business.UserService) error {
+	if svc == nil {
+		return c.JSON(http.StatusServiceUnavailable, response.Error("SERVICE_UNAVAILABLE", "database feature not enabled"))
+	}
+
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 	offset, _ := strconv.Atoi(c.QueryParam("offset"))
 

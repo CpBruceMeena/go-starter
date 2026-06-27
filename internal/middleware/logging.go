@@ -7,9 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	"github.com/CpBruceMeena/go-starter/internal/logger"
+	"github.com/labstack/echo/v4"
 )
+
+type ctxKey string
+
+const requestIDKey ctxKey = "request_id"
 
 // RequestIDMiddleware adds a request ID to the context
 func RequestIDMiddleware(log *logger.Logger) echo.MiddlewareFunc {
@@ -21,7 +25,7 @@ func RequestIDMiddleware(log *logger.Logger) echo.MiddlewareFunc {
 			}
 
 			// Add to context
-			ctx := context.WithValue(c.Request().Context(), "request_id", requestID)
+			ctx := context.WithValue(c.Request().Context(), requestIDKey, requestID)
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			// Add to response header

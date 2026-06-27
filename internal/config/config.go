@@ -40,12 +40,12 @@ type Config struct {
 	// Server
 	ServerPort      int    `json:"server_port"`
 	ServerEnv       string `json:"server_env"`
-	ServerTimeout   int    `json:"server_timeout"` // seconds
+	ServerTimeout   int    `json:"server_timeout"`   // seconds
 	ShutdownTimeout int    `json:"shutdown_timeout"` // seconds
 
 	// Database
-	DatabaseURL string `json:"database_url"`
-	DatabaseDSN string `json:"database_dsn"`
+	DatabaseURL string         `json:"database_url"`
+	DatabaseDSN string         `json:"database_dsn"`
 	Database    DatabaseConfig `json:"database"`
 
 	// AWS
@@ -123,11 +123,11 @@ func Load(ctx context.Context) (*Config, error) {
 		AWSRegion: getEnv("AWS_REGION", "us-east-1"),
 		AWSRole:   getEnv("AWS_ROLE", ""),
 
-		// Features (default: all enabled for backward compatibility, except consumer/worker)
+		// Features (default: all disabled for clean starting point)
 		EnableSwagger:    getEnvBool("ENABLE_SWAGGER", true),
-		EnableDatabase:   getEnvBool("ENABLE_DATABASE", true),
-		EnableCache:      getEnvBool("ENABLE_CACHE", true),
-		EnableHTTPClient: getEnvBool("ENABLE_HTTP_CLIENT", true),
+		EnableDatabase:   getEnvBool("ENABLE_DATABASE", false),
+		EnableCache:      getEnvBool("ENABLE_CACHE", false),
+		EnableHTTPClient: getEnvBool("ENABLE_HTTP_CLIENT", false),
 		EnableConsumer:   getEnvBool("ENABLE_CONSUMER", false),
 		EnableWorker:     getEnvBool("ENABLE_WORKER", false),
 		LogLevel:         getEnv("LOG_LEVEL", "info"),

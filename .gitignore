@@ -42,6 +42,7 @@ vendor/
 *.db
 *.sqlite
 *.sqlite3
+test.db
 
 # Log files
 *.log

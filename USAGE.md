@@ -10,7 +10,25 @@ See [README.md](../README.md) for setup. After setup:
 make run        # Start HTTP server on port 8080
 ```
 
-Visit http://localhost:8080/swagger/index.html for API documentation.
+## Feature Flags
+
+By default, all features are **disabled**. Enable only what you need in `.env`:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `ENABLE_DATABASE` | `false` | Database and user API endpoints |
+| `ENABLE_CACHE` | `false` | Caching layer (optional performance) |
+| `ENABLE_HTTP_CLIENT` | `false` | External HTTP client with circuit breaker |
+| `ENABLE_CONSUMER` | `false` | SQS/Kafka consumers |
+| `ENABLE_WORKER` | `false` | Background worker mode |
+| `ENABLE_SWAGGER` | `true` | Swagger UI documentation |
+
+Example minimal `.env` for an API without database:
+```bash
+ENABLE_DATABASE=false
+ENABLE_CACHE=false
+SERVER_PORT=8080
+```
 
 ## Make Commands
 

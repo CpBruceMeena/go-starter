@@ -11,12 +11,12 @@ import (
 
 // MockUserRepository implements repository.UserRepository for testing
 type MockUserRepository struct {
-	CreateFunc    func(ctx context.Context, user *models.User) error
-	GetByIDFunc   func(ctx context.Context, id string) (*models.User, error)
+	CreateFunc     func(ctx context.Context, user *models.User) error
+	GetByIDFunc    func(ctx context.Context, id string) (*models.User, error)
 	GetByEmailFunc func(ctx context.Context, email string) (*models.User, error)
-	UpdateFunc    func(ctx context.Context, user *models.User) error
-	DeleteFunc    func(ctx context.Context, id string) error
-	ListFunc      func(ctx context.Context, limit, offset int) ([]*models.User, error)
+	UpdateFunc     func(ctx context.Context, user *models.User) error
+	DeleteFunc     func(ctx context.Context, id string) error
+	ListFunc       func(ctx context.Context, limit, offset int) ([]*models.User, error)
 }
 
 func (m *MockUserRepository) Create(ctx context.Context, user *models.User) error {
@@ -61,18 +61,6 @@ func (m *MockUserRepository) List(ctx context.Context, limit, offset int) ([]*mo
 	return []*models.User{}, nil
 }
 
-// MockLogger implements logger.Logger for testing
-type MockLogger struct{}
-
-func (m *MockLogger) Info(msg string, args ...any)                              {}
-func (m *MockLogger) Error(msg string, args ...any)                             {}
-func (m *MockLogger) Warn(msg string, args ...any)                              {}
-func (m *MockLogger) Debug(msg string, args ...any)                             {}
-func (m *MockLogger) InfoContext(ctx context.Context, msg string, args ...any)  {}
-func (m *MockLogger) ErrorContext(ctx context.Context, msg string, args ...any) {}
-func (m *MockLogger) WarnContext(ctx context.Context, msg string, args ...any)    {}
-func (m *MockLogger) DebugContext(ctx context.Context, msg string, args ...any)  {}
-
 func TestCreateUser(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -115,10 +103,9 @@ func TestCreateUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := &MockUserRepository{}
 			mockCache := cache.NewTTLCache()
-			mockLog := &MockLogger{}
 			tt.setup(mockRepo)
 
-			service := NewUserService(mockRepo, mockCache, mockLog)
+			service := NewUserService(mockRepo, mockCache, &logger.Logger{Logger: logger.Default().Logger})
 			_, err := service.CreateUser(context.Background(), tt.req)
 
 			if (err != nil) != tt.wantErr {
@@ -161,10 +148,9 @@ func TestGetUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := &MockUserRepository{}
 			mockCache := cache.NewTTLCache()
-			mockLog := &MockLogger{}
 			tt.setup(mockRepo)
 
-			service := NewUserService(mockRepo, mockCache, mockLog)
+			service := NewUserService(mockRepo, mockCache, &logger.Logger{Logger: logger.Default().Logger})
 			_, err := service.GetUser(context.Background(), tt.id)
 
 			if (err != nil) != tt.wantErr {

@@ -18,6 +18,7 @@ A production-ready Go application template with clean architecture, comprehensiv
 - ✅ **Input Validation** - Struct-tag based validation with error handling
 - ✅ **Docker Ready** - Multi-stage Dockerfile with health checks
 - ✅ **Worker Mode** - Background job processing with scheduled tasks
+- ✅ **Feature Flags** - Enable only the features you need (database, cache, consumer, worker)
 - ✅ **Comprehensive Testing** - Mock-ready architecture with test examples
 
 ## Quick Start
@@ -27,7 +28,7 @@ make setup    # Install dependencies and initialize the project
 make run      # Start HTTP server on port 8080
 ```
 
-Visit http://localhost:8080/swagger/index.html for API documentation.
+Visit http://localhost:8080/swagger/index.html for API documentation (if enabled).
 
 ## Project Structure
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	"github.com/CpBruceMeena/go-starter/internal/business"
 	"github.com/CpBruceMeena/go-starter/internal/cache"
 	"github.com/CpBruceMeena/go-starter/internal/config"
@@ -13,6 +12,7 @@ import (
 	"github.com/CpBruceMeena/go-starter/internal/logger"
 	"github.com/CpBruceMeena/go-starter/internal/repository"
 	"github.com/CpBruceMeena/go-starter/internal/router"
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
@@ -28,51 +28,62 @@ type Server struct {
 
 // New creates a new server instance
 func New(cfg *config.Config, log *logger.Logger) (*Server, error) {
-	// Initialize database
-	db, err := database.InitDB(cfg.DatabaseDSN, &cfg.Database)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %w", err)
-	}
-
-	// Setup database monitoring with connection pool limits
-	if err := database.ApplyConnectionPoolSettings(db, database.MonitorConfig{
-		SlowQueryThreshold: parseDuration(cfg.Database.SlowQueryThreshold, 100*time.Millisecond),
-		QueryTimeout:       parseDuration(cfg.Database.QueryTimeout, 5*time.Second),
-		MaxOpenConns:       cfg.Database.MaxOpenConns,
-		MaxIdleConns:       cfg.Database.MaxIdleConns,
-		ConnMaxLifetime:    parseDuration(cfg.Database.ConnMaxLifetime, time.Hour),
-		Enabled:            true,
-	}); err != nil {
-		return nil, fmt.Errorf("failed to setup database monitoring: %w", err)
-	}
-
-	// Run migrations
-	if err := database.Migrate(db); err != nil {
-		return nil, fmt.Errorf("failed to run migrations: %w", err)
-	}
-
 	e := echo.New()
 
-	return &Server{
+	s := &Server{
 		echo:   e,
-		db:     db,
+		db:     nil,
 		cache:  nil,
 		config: cfg,
 		log:    log,
-	}, nil
+	}
+
+	// Initialize optional components based on config
+	if cfg.IsFeatureEnabled("database") {
+		db, err := database.InitDB(cfg.DatabaseDSN, &cfg.Database)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize database: %w", err)
+		}
+
+		if err := database.ApplyConnectionPoolSettings(db, database.MonitorConfig{
+			SlowQueryThreshold: parseDuration(cfg.Database.SlowQueryThreshold, 100*time.Millisecond),
+			QueryTimeout:       parseDuration(cfg.Database.QueryTimeout, 5*time.Second),
+			MaxOpenConns:       cfg.Database.MaxOpenConns,
+			MaxIdleConns:       cfg.Database.MaxIdleConns,
+			ConnMaxLifetime:    parseDuration(cfg.Database.ConnMaxLifetime, time.Hour),
+			Enabled:            true,
+		}); err != nil {
+			return nil, fmt.Errorf("failed to setup database monitoring: %w", err)
+		}
+
+		if err := database.Migrate(db); err != nil {
+			return nil, fmt.Errorf("failed to run migrations: %w", err)
+		}
+
+		s.db = db
+	}
+
+	if cfg.IsFeatureEnabled("cache") {
+		s.cache = cache.NewTTLCache()
+	}
+
+	return s, nil
 }
 
 // SetupServices initializes all services without HTTP routes
 func (s *Server) SetupServices() error {
-	// Initialize cache if not already done
-	if s.cache == nil {
+	// Initialize cache if not already done and cache is enabled
+	if s.cache == nil && s.config.IsFeatureEnabled("cache") {
 		s.cache = cache.NewTTLCache()
 	}
 
-	// Initialize repositories
-	userRepo := repository.NewUserRepository(s.db)
+	// Initialize repository only if database is enabled
+	var userRepo repository.UserRepository
+	if s.db != nil {
+		userRepo = repository.NewUserRepository(s.db)
+	}
 
-	// Initialize business services
+	// Initialize business services (pass nil for optional components)
 	s.userService = business.NewUserService(userRepo, s.cache, s.log)
 
 	return nil
@@ -108,8 +119,10 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 
 	// Close database connection
-	if err := database.Close(s.db); err != nil {
-		s.log.Error("error closing database", "error", err.Error())
+	if s.db != nil {
+		if err := database.Close(s.db); err != nil {
+			s.log.Error("error closing database", "error", err.Error())
+		}
 	}
 
 	// Shutdown HTTP server with timeout

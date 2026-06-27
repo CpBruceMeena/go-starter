@@ -6,37 +6,34 @@ import (
 	"sync"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"golang.org/x/time/rate"
+
 	"github.com/CpBruceMeena/go-starter/internal/response"
+	"github.com/labstack/echo/v4"
 )
 
-// RateLimiterConfig holds rate limiter configuration
 type RateLimiterConfig struct {
 	RequestsPerSecond int
 	Burst             int
 	CleanupInterval   time.Duration
 }
 
-// RateLimiter implements a simple in-memory rate limiter
 type RateLimiter struct {
-	visitors map[string]*Visitor
+	visitors map[string]*visitor
 	mu       sync.RWMutex
-	rate     time.Duration
+	limit    rate.Limit
 	burst    int
 }
 
-// Visitor tracks request counts per IP
-type Visitor struct {
+type visitor struct {
+	limiter  *rate.Limiter
 	lastSeen time.Time
-	count    int
-	mu       sync.Mutex
 }
 
-// NewRateLimiter creates a new rate limiter
 func NewRateLimiter(cfg RateLimiterConfig) *RateLimiter {
 	rl := &RateLimiter{
-		visitors: make(map[string]*Visitor),
-		rate:     time.Second / time.Duration(cfg.RequestsPerSecond),
+		visitors: make(map[string]*visitor),
+		limit:    rate.Limit(cfg.RequestsPerSecond),
 		burst:    cfg.Burst,
 	}
 
@@ -48,55 +45,43 @@ func NewRateLimiter(cfg RateLimiterConfig) *RateLimiter {
 	return rl
 }
 
-// Allow checks if a request is allowed
-func (rl *RateLimiter) Allow(ip string) bool {
+func (rl *RateLimiter) getVisitor(ip string) *rate.Limiter {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 
 	v, exists := rl.visitors[ip]
 	if !exists {
-		rl.visitors[ip] = &Visitor{count: 1}
-		return true
+		limiter := rate.NewLimiter(rl.limit, rl.burst)
+		rl.visitors[ip] = &visitor{limiter: limiter, lastSeen: time.Now()}
+		return limiter
 	}
-
-	v.mu.Lock()
-	defer v.mu.Unlock()
 	v.lastSeen = time.Now()
-
-	if v.count > rl.burst {
-		return false
-	}
-
-	v.count++
-	return true
+	return v.limiter
 }
 
-// cleanupVisitors removes old visitors
 func (rl *RateLimiter) cleanupVisitors(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	for range ticker.C {
 		rl.mu.Lock()
 		for ip, v := range rl.visitors {
-			v.mu.Lock()
 			if time.Since(v.lastSeen) > 3*interval {
 				delete(rl.visitors, ip)
 			}
-			v.mu.Unlock()
 		}
 		rl.mu.Unlock()
 	}
 }
 
-// RateLimitMiddleware returns middleware that rate limits requests
 func RateLimitMiddleware(rl *RateLimiter) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			ip, _, _ := net.SplitHostPort(c.RealIP())
-			if ip == "" {
-				ip = c.RealIP()
+			realIP := c.RealIP()
+			ip, _, err := net.SplitHostPort(realIP)
+			if err != nil {
+				ip = realIP
 			}
 
-			if !rl.Allow(ip) {
+			if !rl.getVisitor(ip).Allow() {
 				return c.JSON(http.StatusTooManyRequests, response.Error("RATE_LIMITED", "Too many requests"))
 			}
 
