@@ -102,13 +102,18 @@ func (s *Server) Start() error {
 func (s *Server) Stop(ctx context.Context) error {
 	s.log.Info("shutting down server")
 
+	shutdownTimeout := time.Duration(s.config.ShutdownTimeout) * time.Second
+	if shutdownTimeout == 0 {
+		shutdownTimeout = 10 * time.Second
+	}
+
 	// Close database connection
 	if err := database.Close(s.db); err != nil {
 		s.log.Error("error closing database", "error", err.Error())
 	}
 
 	// Shutdown HTTP server with timeout
-	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, shutdownTimeout)
 	defer cancel()
 
 	return s.echo.Shutdown(shutdownCtx)

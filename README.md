@@ -1,25 +1,24 @@
 # Go Starter - Production-Ready Template
 
-A comprehensive Go application starter template with best practices, modern patterns, and production-ready features built-in. Includes database query monitoring, slow query detection, and connection pool management.
+A production-ready Go application template with clean architecture, comprehensive observability, and enterprise deployment patterns. Built for scalability, maintainability, and operational excellence.
 
 ## Features
 
-- ✅ **Latest Go Version** (1.23+) - Using modern Go features
-- ✅ **Swagger/OpenAPI** - API documentation out of the box
-- ✅ **Structured Logging** - Using slog (stdlib) with context support
-- ✅ **HTTP Client with Circuit Breaker** - Built-in resilience patterns
-- ✅ **Dual Caching System** - TTL cache and in-memory cache with locks
-- ✅ **Database Query Monitoring** - Slow query detection, connection pool limits, configurable timeouts
-- ✅ **AWS Integration Ready** - Secrets Manager, task definitions, local env override
-- ✅ **Repository Pattern** - Clean data access layer
-- ✅ **Service Layer** - Business logic separation
-- ✅ **File Size Guardrails** - Automatic warnings for large files
-- ✅ **Makefile Automation** - Setup, build, test, deploy commands
-- ✅ **Docker Ready** - Dockerfile included
-- ✅ **Database Migrations** - GORM auto-migration support
-- ✅ **Middleware Support** - Request ID, logging, CORS ready
-- ✅ **Error Handling** - Standardized error responses
-- ✅ **Configuration Management** - Environment variables + AWS Secrets Manager
+- ✅ **Latest Go Version** (1.23+) - Using modern Go features with slog and generics
+- ✅ **Clean Architecture** - Repository pattern with clear separation of concerns
+- ✅ **Swagger/OpenAPI** - Auto-generated API documentation
+- ✅ **Structured Logging** - JSON logging with context propagation, request tracing
+- ✅ **HTTP Client with Circuit Breaker** - Resilience patterns for external API calls
+- ✅ **Dual Caching System** - TTL cache + in-memory cache with lock control
+- ✅ **Database Monitoring** - Slow query detection, connection pool management, timeouts
+- ✅ **AWS Integration** - Secrets Manager, SQS consumers, SNS publishing
+- ✅ **Prometheus Metrics** - Built-in observability with HTTP and DB metrics
+- ✅ **OpenTelemetry Support** - Distributed tracing integration ready
+- ✅ **Rate Limiting** - Configurable per-IP rate limiting middleware
+- ✅ **Input Validation** - Struct-tag based validation with error handling
+- ✅ **Docker Ready** - Multi-stage Dockerfile with health checks
+- ✅ **Worker Mode** - Background job processing with scheduled tasks
+- ✅ **Comprehensive Testing** - Mock-ready architecture with test examples
 
 ## Quick Start
 

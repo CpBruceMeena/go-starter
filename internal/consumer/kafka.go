@@ -7,15 +7,6 @@ import (
 	"time"
 )
 
-// KafkaConfig holds Kafka specific configuration
-type KafkaConfig struct {
-	Brokers        []string // Kafka broker addresses
-	Topic          string   // Topic to consume
-	ConsumerGroup  string   // Consumer group ID
-	StartOffset    int64    // Start offset (0 = newest, -1 = oldest, or specific offset)
-	SessionTimeout int      // Session timeout in seconds
-}
-
 // KafkaConsumer implements Consumer interface for Apache Kafka
 type KafkaConsumer struct {
 	cfg            *Config
@@ -40,10 +31,6 @@ func NewKafkaConsumer(cfg *Config) (Consumer, error) {
 
 	if cfg.Kafka.ConsumerGroup == "" {
 		cfg.Kafka.ConsumerGroup = "default-group"
-	}
-
-	if cfg.Kafka.SessionTimeout <= 0 {
-		cfg.Kafka.SessionTimeout = 30
 	}
 
 	return &KafkaConsumer{

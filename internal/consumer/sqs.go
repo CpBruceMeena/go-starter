@@ -5,15 +5,11 @@ import (
 	"fmt"
 	"sync"
 	"time"
-)
 
-// SQSConfig holds AWS SQS specific configuration
-type SQSConfig struct {
-	QueueURL       string // SQS Queue URL
-	MaxMessages    int    // Max messages to fetch per poll (1-10)
-	WaitTimeSecond int    // Long polling wait time (0-20 seconds)
-	Region         string // AWS Region
-}
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+)
 
 // SQSConsumer implements Consumer interface for AWS SQS
 type SQSConsumer struct {
@@ -25,6 +21,8 @@ type SQSConsumer struct {
 	wg             sync.WaitGroup
 	processingCh   chan *Message
 	maxConcurrency int
+	sqsClient      *sqs.Client
+	queueURL       string
 }
 
 // NewSQSConsumer creates a new SQS consumer
@@ -37,13 +35,23 @@ func NewSQSConsumer(cfg *Config) (Consumer, error) {
 		cfg.SQS.WaitTimeSecond = 20
 	}
 
-	return &SQSConsumer{
+	awsCfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(cfg.SQS.Region))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
+	}
+
+	consumer := &SQSConsumer{
 		cfg:            cfg,
 		stopCh:         make(chan struct{}),
 		processingCh:   make(chan *Message, cfg.MaxConcurrency),
 		maxConcurrency: cfg.MaxConcurrency,
 		running:        false,
-	}, nil
+		sqsClient:      sqs.NewFromConfig(awsCfg),
+		queueURL:       cfg.SQS.QueueURL,
+	}
+
+	cfg.Logger.Info("SQS consumer configured", "queue_url", cfg.SQS.QueueURL, "max_messages", cfg.SQS.MaxMessages)
+	return consumer, nil
 }
 
 // Register registers a message handler
@@ -65,7 +73,7 @@ func (c *SQSConsumer) Start(ctx context.Context) error {
 	c.running = true
 	c.mu.Unlock()
 
-	c.cfg.Logger.Info("SQS consumer starting", "queue_url", c.cfg.SQS.QueueURL, "max_messages", c.cfg.SQS.MaxMessages)
+	c.cfg.Logger.Info("SQS consumer starting", "queue_url", c.queueURL)
 
 	// Start message processors
 	for i := 0; i < c.maxConcurrency; i++ {
@@ -130,24 +138,45 @@ func (c *SQSConsumer) pollMessages(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			// TODO: Implement actual SQS polling using aws-sdk-go-v2
-			// For now, this is a placeholder
-			// messages, err := c.receiveMessages(ctx)
-			// if err != nil {
-			//     if c.cfg.ErrorHandler != nil {
-			//         c.cfg.ErrorHandler(err)
-			//     }
-			//     continue
-			// }
-			// for _, msg := range messages {
-			//     select {
-			//     case c.processingCh <- msg:
-			//     case <-c.stopCh:
-			//         return
-			//     }
-			// }
+			messages, err := c.receiveMessages(ctx)
+			if err != nil {
+				if c.cfg.ErrorHandler != nil {
+					c.cfg.ErrorHandler(err)
+				}
+				continue
+			}
+			for _, msg := range messages {
+				select {
+				case c.processingCh <- msg:
+				case <-c.stopCh:
+					return
+				}
+			}
 		}
 	}
+}
+
+// receiveMessages fetches messages from SQS
+func (c *SQSConsumer) receiveMessages(ctx context.Context) ([]*Message, error) {
+	result, err := c.sqsClient.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            aws.String(c.queueURL),
+		MaxNumberOfMessages: int32(c.cfg.SQS.MaxMessages),
+		WaitTimeSeconds:     int32(c.cfg.SQS.WaitTimeSecond),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to receive messages: %w", err)
+	}
+
+	messages := make([]*Message, len(result.Messages))
+	for i, msg := range result.Messages {
+		messages[i] = &Message{
+			ID:            *msg.MessageId,
+			Body:          *msg.Body,
+			ReceiptHandle: *msg.ReceiptHandle,
+			Raw:           msg,
+		}
+	}
+	return messages, nil
 }
 
 // processMessages processes messages from the channel
@@ -169,7 +198,7 @@ func (c *SQSConsumer) processMessages(ctx context.Context) {
 			handlerCtx, cancel := context.WithTimeout(ctx, time.Duration(c.cfg.HandlerTimeout)*time.Second)
 
 			if err := c.handler(handlerCtx, msg); err != nil {
-				c.cfg.Logger.Error("message handler error",
+				c.cfg.Logger.Error("SQS message handler error",
 					"message_id", msg.ID,
 					"error", err.Error(),
 				)
@@ -177,10 +206,22 @@ func (c *SQSConsumer) processMessages(ctx context.Context) {
 					c.cfg.ErrorHandler(err)
 				}
 			} else {
-				c.cfg.Logger.Debug("message processed", "message_id", msg.ID)
+				// Delete message from queue on success
+				if err := c.deleteMessage(ctx, msg.ReceiptHandle); err != nil {
+					c.cfg.Logger.Error("failed to delete message", "message_id", msg.ID, "error", err.Error())
+				}
 			}
 
 			cancel()
 		}
 	}
+}
+
+// deleteMessage removes a message from the SQS queue
+func (c *SQSConsumer) deleteMessage(ctx context.Context, receiptHandle string) error {
+	_, err := c.sqsClient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      aws.String(c.queueURL),
+		ReceiptHandle: aws.String(receiptHandle),
+	})
+	return err
 }

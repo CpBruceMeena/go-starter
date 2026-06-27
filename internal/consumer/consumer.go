@@ -9,9 +9,10 @@ import (
 
 // Message represents a message received from queue/broker
 type Message struct {
-	ID    string
-	Body  string
-	Raw   interface{} // Raw message for custom processing
+	ID           string
+	Body         string
+	ReceiptHandle string // SQS receipt handle for deletion
+	Raw          interface{} // Raw message for custom processing
 }
 
 // Handler processes a message from the consumer
@@ -41,6 +42,21 @@ type Config struct {
 	HandlerTimeout  int           // Timeout for handler in seconds
 	ErrorHandler    func(error)   // Custom error handler
 	Logger          *logger.Logger
+}
+
+// SQSConfig holds AWS SQS specific configuration
+type SQSConfig struct {
+	QueueURL       string // SQS Queue URL
+	MaxMessages    int    // Max messages to fetch per poll (1-10)
+	WaitTimeSecond int    // Long polling wait time (0-20 seconds)
+	Region         string // AWS Region
+}
+
+// KafkaConfig holds Kafka specific configuration
+type KafkaConfig struct {
+	Brokers        []string
+	Topic          string
+	ConsumerGroup  string
 }
 
 // New creates a new consumer based on config

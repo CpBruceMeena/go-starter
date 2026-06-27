@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // User represents a user in the system
 // Swagger doc: @description User model with basic information
@@ -15,6 +19,14 @@ type User struct {
 // TableName specifies the table name for User
 func (User) TableName() string {
 	return "users"
+}
+
+// BeforeCreate is a GORM hook that generates UUID before inserting
+func (u *User) BeforeCreate(tx interface{}) error {
+	if u.ID == "" {
+		u.ID = uuid.New().String()
+	}
+	return nil
 }
 
 // CreateUserRequest is the request model for creating a user

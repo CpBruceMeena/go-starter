@@ -170,7 +170,6 @@ func (w *Worker) runTask(ctx context.Context, task Task) {
 func (w *Worker) executeTask(ctx context.Context, task Task) {
 	// Create context with timeout
 	taskCtx, cancel := context.WithTimeout(ctx, task.Timeout)
-	defer cancel()
 
 	startTime := time.Now()
 	w.log.Info("task started", "name", task.Name)
@@ -178,6 +177,9 @@ func (w *Worker) executeTask(ctx context.Context, task Task) {
 	err := task.Fn(taskCtx)
 
 	duration := time.Since(startTime)
+
+	// Cancel the context after task completes
+	cancel()
 
 	if err != nil {
 		w.log.Error("task failed",

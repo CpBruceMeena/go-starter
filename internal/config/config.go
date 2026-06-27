@@ -38,9 +38,10 @@ type DatabaseConfig struct {
 // Config holds all application configuration
 type Config struct {
 	// Server
-	ServerPort    int    `json:"server_port"`
-	ServerEnv     string `json:"server_env"`
-	ServerTimeout int    `json:"server_timeout"` // seconds
+	ServerPort      int    `json:"server_port"`
+	ServerEnv       string `json:"server_env"`
+	ServerTimeout   int    `json:"server_timeout"` // seconds
+	ShutdownTimeout int    `json:"shutdown_timeout"` // seconds
 
 	// Database
 	DatabaseURL string `json:"database_url"`
@@ -102,9 +103,10 @@ func Load(ctx context.Context) (*Config, error) {
 
 	cfg := &Config{
 		// Server
-		ServerPort:    getEnvInt("SERVER_PORT", 8080),
-		ServerEnv:     getEnv("ENV", "development"),
-		ServerTimeout: getEnvInt("SERVER_TIMEOUT", 30),
+		ServerPort:      getEnvInt("SERVER_PORT", 8080),
+		ServerEnv:       getEnv("ENV", "development"),
+		ServerTimeout:   getEnvInt("SERVER_TIMEOUT", 30),
+		ShutdownTimeout: getEnvInt("SHUTDOWN_TIMEOUT", 10),
 
 		// Database
 		DatabaseURL: getEnv("DATABASE_URL", ""),

@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/CpBruceMeena/go-starter/internal/business"
+	"github.com/CpBruceMeena/go-starter/internal/middleware"
 	"github.com/CpBruceMeena/go-starter/internal/models"
 	"github.com/CpBruceMeena/go-starter/internal/response"
 )
@@ -13,8 +14,8 @@ import (
 // CreateUser creates a new user
 func CreateUser(c echo.Context, svc business.UserService) error {
 	var req models.CreateUserRequest
-	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, response.Error("INVALID_REQUEST", err.Error()))
+	if err := middleware.BindAndValidate(c, &req); err != nil {
+		return err
 	}
 
 	user, err := svc.CreateUser(c.Request().Context(), &business.CreateUserRequest{
@@ -45,8 +46,8 @@ func UpdateUser(c echo.Context, svc business.UserService) error {
 	id := c.Param("id")
 
 	var req models.UpdateUserRequest
-	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, response.Error("INVALID_REQUEST", err.Error()))
+	if err := middleware.BindAndValidate(c, &req); err != nil {
+		return err
 	}
 
 	user, err := svc.UpdateUser(c.Request().Context(), id, &business.UpdateUserRequest{
