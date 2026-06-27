@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/your-org/go-starter/internal/consumer"
-	"github.com/your-org/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/consumer"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
 )
 
 // TaskFunc is the function signature for worker tasks

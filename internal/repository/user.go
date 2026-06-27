@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/your-org/go-starter/internal/models"
+	"github.com/CpBruceMeena/go-starter/internal/models"
 	"gorm.io/gorm"
 )
 

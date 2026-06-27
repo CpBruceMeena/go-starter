@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/sony/gobreaker"
-	"github.com/your-org/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
 )
 
 // Client wraps http.Client with circuit breaker support

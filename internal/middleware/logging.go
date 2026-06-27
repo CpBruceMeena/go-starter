@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/your-org/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
 )
 
 // RequestIDMiddleware adds a request ID to the context

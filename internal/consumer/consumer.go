@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/your-org/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
 )
 
 // Message represents a message received from queue/broker

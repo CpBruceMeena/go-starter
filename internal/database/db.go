@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/your-org/go-starter/internal/config"
-	"github.com/your-org/go-starter/internal/models"
+	"github.com/CpBruceMeena/go-starter/internal/config"
+	"github.com/CpBruceMeena/go-starter/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

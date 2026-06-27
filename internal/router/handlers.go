@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/your-org/go-starter/internal/business"
-	"github.com/your-org/go-starter/internal/models"
+	"github.com/CpBruceMeena/go-starter/internal/business"
+	"github.com/CpBruceMeena/go-starter/internal/models"
 )
 
 // ErrorResponse is the standard error response format

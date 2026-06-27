@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/your-org/go-starter/internal/business"
-	"github.com/your-org/go-starter/internal/cache"
-	"github.com/your-org/go-starter/internal/config"
-	"github.com/your-org/go-starter/internal/database"
-	"github.com/your-org/go-starter/internal/logger"
-	"github.com/your-org/go-starter/internal/repository"
-	"github.com/your-org/go-starter/internal/router"
+	"github.com/CpBruceMeena/go-starter/internal/business"
+	"github.com/CpBruceMeena/go-starter/internal/cache"
+	"github.com/CpBruceMeena/go-starter/internal/config"
+	"github.com/CpBruceMeena/go-starter/internal/database"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/repository"
+	"github.com/CpBruceMeena/go-starter/internal/router"
 	"gorm.io/gorm"
 )
 
@@ -108,10 +108,10 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 
 	// Shutdown HTTP server with timeout
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	return s.echo.Shutdown(ctx)
+	return s.echo.Shutdown(shutdownCtx)
 }
 
 // Echo returns the echo instance

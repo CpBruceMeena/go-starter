@@ -6,9 +6,9 @@ import (
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
-	"github.com/your-org/go-starter/internal/business"
-	"github.com/your-org/go-starter/internal/logger"
-	"github.com/your-org/go-starter/internal/middleware"
+	"github.com/CpBruceMeena/go-starter/internal/business"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/middleware"
 )
 
 // SetupRoutes configures all application routes

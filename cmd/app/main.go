@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/your-org/go-starter/internal/config"
-	"github.com/your-org/go-starter/internal/logger"
-	"github.com/your-org/go-starter/internal/server"
-	"github.com/your-org/go-starter/internal/worker"
+	"github.com/CpBruceMeena/go-starter/internal/config"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/server"
+	"github.com/CpBruceMeena/go-starter/internal/worker"
 )
 
 // @title Go Starter API
@@ -93,7 +93,7 @@ func runHTTPServer(ctx context.Context, cfg *config.Config, log *logger.Logger) 
 // runWorker runs the application as a background worker
 func runWorker(ctx context.Context, cfg *config.Config, log *logger.Logger) {
 	// Import worker package
-	// This is imported at top: "github.com/your-org/go-starter/internal/worker"
+	// This is imported at top: "github.com/CpBruceMeena/go-starter/internal/worker"
 
 	// Create server (for database and services)
 	srv, err := server.New(cfg, log)

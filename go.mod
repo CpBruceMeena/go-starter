@@ -1,4 +1,4 @@
-module github.com/your-org/go-starter
+module github.com/CpBruceMeena/go-starter
 
 go 1.25
 

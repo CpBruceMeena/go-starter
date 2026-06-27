@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/your-org/go-starter/internal/cache"
-	"github.com/your-org/go-starter/internal/logger"
-	"github.com/your-org/go-starter/internal/models"
-	"github.com/your-org/go-starter/internal/repository"
+	"github.com/CpBruceMeena/go-starter/internal/cache"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/models"
+	"github.com/CpBruceMeena/go-starter/internal/repository"
 )
 
 // UserService defines user business logic

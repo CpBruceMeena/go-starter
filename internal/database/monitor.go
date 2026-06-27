@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/your-org/go-starter/internal/logger"
+	"github.com/CpBruceMeena/go-starter/internal/logger"
 	gormLogger "gorm.io/gorm/logger"
 	"gorm.io/gorm"
 )
