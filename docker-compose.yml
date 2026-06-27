@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (optional, uncomment to use)
+  postgres:
+    image: postgres:15-alpine
+    container_name: go-starter-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: go_starter
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-starter-network
+
+  # Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-starter-app
+    environment:
+      ENV: development
+      SERVER_PORT: 8080
+      LOG_LEVEL: debug
+      ENABLE_SWAGGER: "true"
+      # Uncomment for PostgreSQL
+      # DATABASE_URL: postgresql://postgres:postgres@postgres:5432/go_starter
+      # For SQLite (default)
+      DATABASE_DSN: test.db
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - go-starter-network
+    volumes:
+      - .:/app
+    command: ./app
+
+volumes:
+  postgres_data:
+
+networks:
+  go-starter-network:
+    driver: bridge

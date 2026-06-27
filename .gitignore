@@ -1,0 +1,75 @@
+# Go binaries
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Go test binary
+*.test
+
+# Output of go coverage
+*.out
+coverage.html
+coverage.out
+
+# Dependency directories
+vendor/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Air live reload
+tmp/
+
+# Build artifacts
+/out/
+
+# Code Review Graph (if using)
+.code-review-graph/
+.code_review_graph/
+code-review-graph-cache/
+crg-cache/
+.cache/code-review-graph/
+.cache/crg/
+*.crg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Swagger UI files
+docs/swagger.json
+docs/swagger.yaml
