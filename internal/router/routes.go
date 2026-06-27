@@ -1,7 +1,10 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/your-org/go-starter/internal/business"
 	"github.com/your-org/go-starter/internal/logger"
@@ -11,6 +14,7 @@ import (
 // SetupRoutes configures all application routes
 func SetupRoutes(e *echo.Echo, userService business.UserService, log *logger.Logger) {
 	// Add middleware
+	e.Use(echomiddleware.Recover())
 	e.Use(middleware.RequestIDMiddleware(log))
 	e.Use(middleware.LoggingMiddleware(log))
 
@@ -25,7 +29,7 @@ func SetupRoutes(e *echo.Echo, userService business.UserService, log *logger.Log
 
 	// Health check
 	api.GET("/health", func(c echo.Context) error {
-		return c.JSON(200, map[string]string{
+		return c.JSON(http.StatusOK, map[string]string{
 			"status": "ok",
 		})
 	})
