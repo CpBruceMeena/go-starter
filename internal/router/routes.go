@@ -9,6 +9,7 @@ import (
 	"github.com/CpBruceMeena/go-starter/internal/business"
 	"github.com/CpBruceMeena/go-starter/internal/logger"
 	"github.com/CpBruceMeena/go-starter/internal/middleware"
+	"github.com/CpBruceMeena/go-starter/internal/response"
 )
 
 // SetupRoutes configures all application routes
@@ -29,9 +30,9 @@ func SetupRoutes(e *echo.Echo, userService business.UserService, log *logger.Log
 
 	// Health check
 	api.GET("/health", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{
+		return c.JSON(http.StatusOK, response.Success(map[string]string{
 			"status": "ok",
-		})
+		}))
 	})
 }
 

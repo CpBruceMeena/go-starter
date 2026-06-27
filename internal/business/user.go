@@ -10,13 +10,35 @@ import (
 	"github.com/CpBruceMeena/go-starter/internal/repository"
 )
 
-// UserService defines user business logic
-type UserService interface {
-	CreateUser(ctx context.Context, req *models.CreateUserRequest) (*models.UserResponse, error)
-	GetUser(ctx context.Context, id string) (*models.UserResponse, error)
-	UpdateUser(ctx context.Context, id string, req *models.UpdateUserRequest) (*models.UserResponse, error)
+// UserServiceInterface defines the user service contract
+type UserServiceInterface interface {
+	CreateUser(ctx context.Context, req *CreateUserRequest) (*UserResponse, error)
+	GetUser(ctx context.Context, id string) (*UserResponse, error)
+	UpdateUser(ctx context.Context, id string, req *UpdateUserRequest) (*UserResponse, error)
 	DeleteUser(ctx context.Context, id string) error
-	ListUsers(ctx context.Context, limit, offset int) ([]*models.UserResponse, error)
+	ListUsers(ctx context.Context, limit, offset int) ([]*UserResponse, error)
+}
+
+// UserService is the exported service interface
+type UserService = UserServiceInterface
+
+// Request/Response types (separate from models for clean API boundaries)
+type CreateUserRequest struct {
+	Email string `json:"email" validate:"required,email"`
+	Name  string `json:"name" validate:"required"`
+}
+
+type UpdateUserRequest struct {
+	Email string `json:"email" validate:"omitempty,email"`
+	Name  string `json:"name" validate:"omitempty"`
+}
+
+type UserResponse struct {
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 // userService implements UserService
@@ -36,10 +58,9 @@ func NewUserService(repo repository.UserRepository, c *cache.TTLCache, log *logg
 }
 
 // CreateUser creates a new user
-func (s *userService) CreateUser(ctx context.Context, req *models.CreateUserRequest) (*models.UserResponse, error) {
+func (s *userService) CreateUser(ctx context.Context, req *CreateUserRequest) (*UserResponse, error) {
 	s.log.InfoContext(ctx, "creating user", "email", req.Email)
 
-	// Check if user already exists
 	existing, err := s.repo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		s.log.ErrorContext(ctx, "error checking existing user", "error", err.Error())
@@ -50,7 +71,6 @@ func (s *userService) CreateUser(ctx context.Context, req *models.CreateUserRequ
 		return nil, fmt.Errorf("user with email %s already exists", req.Email)
 	}
 
-	// Create user
 	user := &models.User{
 		Email: req.Email,
 		Name:  req.Name,
@@ -62,24 +82,20 @@ func (s *userService) CreateUser(ctx context.Context, req *models.CreateUserRequ
 	}
 
 	s.log.InfoContext(ctx, "user created successfully", "user_id", user.ID)
-
-	// Invalidate list cache
 	s.cache.Delete("users:list")
 
-	return user.ToResponse(), nil
+	return s.modelToResponse(user), nil
 }
 
 // GetUser retrieves a user by ID
-func (s *userService) GetUser(ctx context.Context, id string) (*models.UserResponse, error) {
+func (s *userService) GetUser(ctx context.Context, id string) (*UserResponse, error) {
 	cacheKey := fmt.Sprintf("user:%s", id)
 
-	// Try to get from cache
 	if cached, exists := s.cache.Get(cacheKey); exists {
 		s.log.DebugContext(ctx, "user found in cache", "user_id", id)
-		return cached.(*models.UserResponse), nil
+		return cached.(*UserResponse), nil
 	}
 
-	// Get from database
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.log.ErrorContext(ctx, "error getting user", "user_id", id, "error", err.Error())
@@ -90,19 +106,16 @@ func (s *userService) GetUser(ctx context.Context, id string) (*models.UserRespo
 		return nil, fmt.Errorf("user not found")
 	}
 
-	response := user.ToResponse()
-
-	// Cache the result (5 minute TTL)
+	response := s.modelToResponse(user)
 	s.cache.Set(cacheKey, response, 5*60)
 
 	return response, nil
 }
 
 // UpdateUser updates an existing user
-func (s *userService) UpdateUser(ctx context.Context, id string, req *models.UpdateUserRequest) (*models.UserResponse, error) {
+func (s *userService) UpdateUser(ctx context.Context, id string, req *UpdateUserRequest) (*UserResponse, error) {
 	s.log.InfoContext(ctx, "updating user", "user_id", id)
 
-	// Get existing user
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.log.ErrorContext(ctx, "error getting user", "user_id", id, "error", err.Error())
@@ -113,7 +126,6 @@ func (s *userService) UpdateUser(ctx context.Context, id string, req *models.Upd
 		return nil, fmt.Errorf("user not found")
 	}
 
-	// Update fields
 	if req.Email != "" {
 		user.Email = req.Email
 	}
@@ -121,7 +133,6 @@ func (s *userService) UpdateUser(ctx context.Context, id string, req *models.Upd
 		user.Name = req.Name
 	}
 
-	// Save to database
 	if err := s.repo.Update(ctx, user); err != nil {
 		s.log.ErrorContext(ctx, "error updating user", "user_id", id, "error", err.Error())
 		return nil, err
@@ -129,12 +140,11 @@ func (s *userService) UpdateUser(ctx context.Context, id string, req *models.Upd
 
 	s.log.InfoContext(ctx, "user updated successfully", "user_id", id)
 
-	// Invalidate cache
 	cacheKey := fmt.Sprintf("user:%s", id)
 	s.cache.Delete(cacheKey)
 	s.cache.Delete("users:list")
 
-	return user.ToResponse(), nil
+	return s.modelToResponse(user), nil
 }
 
 // DeleteUser deletes a user
@@ -148,7 +158,6 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 
 	s.log.InfoContext(ctx, "user deleted successfully", "user_id", id)
 
-	// Invalidate cache
 	cacheKey := fmt.Sprintf("user:%s", id)
 	s.cache.Delete(cacheKey)
 	s.cache.Delete("users:list")
@@ -157,30 +166,37 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 }
 
 // ListUsers lists all users
-func (s *userService) ListUsers(ctx context.Context, limit, offset int) ([]*models.UserResponse, error) {
+func (s *userService) ListUsers(ctx context.Context, limit, offset int) ([]*UserResponse, error) {
 	cacheKey := fmt.Sprintf("users:list:%d:%d", limit, offset)
 
-	// Try to get from cache
 	if cached, exists := s.cache.Get(cacheKey); exists {
 		s.log.DebugContext(ctx, "users list found in cache")
-		return cached.([]*models.UserResponse), nil
+		return cached.([]*UserResponse), nil
 	}
 
-	// Get from database
 	users, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		s.log.ErrorContext(ctx, "error listing users", "error", err.Error())
 		return nil, err
 	}
 
-	// Convert to responses
-	responses := make([]*models.UserResponse, len(users))
+	responses := make([]*UserResponse, len(users))
 	for i, user := range users {
-		responses[i] = user.ToResponse()
+		responses[i] = s.modelToResponse(user)
 	}
 
-	// Cache the result (5 minute TTL)
 	s.cache.Set(cacheKey, responses, 5*60)
 
 	return responses, nil
+}
+
+// modelToResponse converts models.User to UserResponse
+func (s *userService) modelToResponse(user *models.User) *UserResponse {
+	return &UserResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt: user.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
 }
