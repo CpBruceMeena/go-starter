@@ -9,10 +9,10 @@ import (
 
 // Message represents a message received from queue/broker
 type Message struct {
-	ID           string
-	Body         string
-	ReceiptHandle string // SQS receipt handle for deletion
-	Raw          interface{} // Raw message for custom processing
+	ID            string
+	Body          string
+	ReceiptHandle string      // SQS receipt handle for deletion
+	Raw           interface{} // Raw message for custom processing
 }
 
 // Handler processes a message from the consumer
@@ -35,13 +35,13 @@ type Consumer interface {
 
 // Config holds consumer configuration
 type Config struct {
-	Type            string // "sqs" or "kafka"
-	SQS             *SQSConfig
-	Kafka           *KafkaConfig
-	MaxConcurrency  int           // Number of concurrent message processors
-	HandlerTimeout  int           // Timeout for handler in seconds
-	ErrorHandler    func(error)   // Custom error handler
-	Logger          *logger.Logger
+	Type           string // "sqs" or "kafka"
+	SQS            *SQSConfig
+	Kafka          *KafkaConfig
+	MaxConcurrency int         // Number of concurrent message processors
+	HandlerTimeout int         // Timeout for handler in seconds
+	ErrorHandler   func(error) // Custom error handler
+	Logger         *logger.Logger
 }
 
 // SQSConfig holds AWS SQS specific configuration
@@ -54,9 +54,9 @@ type SQSConfig struct {
 
 // KafkaConfig holds Kafka specific configuration
 type KafkaConfig struct {
-	Brokers        []string
-	Topic          string
-	ConsumerGroup  string
+	Brokers       []string
+	Topic         string
+	ConsumerGroup string
 }
 
 // New creates a new consumer based on config

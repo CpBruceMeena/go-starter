@@ -6,18 +6,18 @@ import (
 	"time"
 
 	"github.com/CpBruceMeena/go-starter/internal/logger"
-	gormLogger "gorm.io/gorm/logger"
 	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 )
 
 // MonitorConfig holds configuration for database query monitoring
 type MonitorConfig struct {
-	SlowQueryThreshold  time.Duration
-	QueryTimeout        time.Duration
-	MaxOpenConns        int
-	MaxIdleConns        int
-	ConnMaxLifetime     time.Duration
-	Enabled             bool
+	SlowQueryThreshold time.Duration
+	QueryTimeout       time.Duration
+	MaxOpenConns       int
+	MaxIdleConns       int
+	ConnMaxLifetime    time.Duration
+	Enabled            bool
 }
 
 // Monitor wraps database operations with timeout and logging

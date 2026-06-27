@@ -3,13 +3,13 @@ package router
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-	echomiddleware "github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/CpBruceMeena/go-starter/internal/business"
 	"github.com/CpBruceMeena/go-starter/internal/logger"
 	"github.com/CpBruceMeena/go-starter/internal/middleware"
 	"github.com/CpBruceMeena/go-starter/internal/response"
+	"github.com/labstack/echo/v4"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // SetupRoutes configures all application routes

@@ -3,10 +3,10 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
 	"github.com/CpBruceMeena/go-starter/internal/logger"
 	"github.com/CpBruceMeena/go-starter/internal/response"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
 )
 
 // Validate is the validator instance
